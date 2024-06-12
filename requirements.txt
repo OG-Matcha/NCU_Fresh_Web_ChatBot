@@ -1,6 +1,10 @@
 langchain
+langchain-community
 langchain-openai
+unstructured
+markdown
 tiktoken
 openai
-PyPDF2
 faiss-cpu
+python-dotenv
+streamlit
