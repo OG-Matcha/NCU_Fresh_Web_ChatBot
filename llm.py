@@ -96,6 +96,7 @@ class ConversationBot:
 
     def _retrieve_answers(self, query, rag_chain):
         conversation = self.conversations
+        count = 0
 
         question = f"""
 # 使用者與你的對話紀錄
@@ -107,7 +108,15 @@ class ConversationBot:
 # 問題
 {query}
 """
-        result = rag_chain.invoke({"input": question})
+        try:
+            result = rag_chain.invoke({"input": question})
+        except Exception as e:
+            if count < 5:
+                result = rag_chain.invoke({"input": question})
+                count += 1
+            else:
+                return "我不知道耶🧡"
+
 
         self.info = [document.page_content for document in result['context']]
         answer = result['answer']
