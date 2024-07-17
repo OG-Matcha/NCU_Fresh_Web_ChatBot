@@ -108,27 +108,36 @@ class ConversationBot:
 # 問題
 {query}
 """
+
         try:
-            result = rag_chain.invoke({"input": question})
+            temp_conv = []
+            result = rag_chain.stream({"input": question})
+            for chunk in result:
+                if answer_chunk := chunk.get("answer"):
+                    temp_conv.append(answer_chunk)
+                    yield answer_chunk
         except Exception as e:
             if count < 5:
-                result = rag_chain.invoke({"input": question})
+                temp_conv = []
+                result = rag_chain.stream({"input": question})
+                for chunk in result:
+                    if answer_chunk := chunk.get("answer"):
+                        temp_conv.append(answer_chunk)
+                        yield answer_chunk
                 count += 1
             else:
-                return "我不知道耶🧡"
+                temp_conv = []
+                temp_conv.append("我不知道耶🧡")
+                yield "我不知道耶🧡"
 
 
         self.info = [document.page_content for document in result['context']]
-        answer = result['answer']
 
         while len(conversation) > 4:
             self.conversations.pop(0)
 
         self.conversations.append(query)
-        self.conversations.append(answer)
-
-        return answer
-
+        self.conversations.append(" ".join(temp_conv))
 
     def start_process(self, query):
         answer = self._retrieve_answers(query, self.rag_chain)
